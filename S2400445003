@@ -2,44 +2,55 @@ import matplotlib.pyplot as plt
 import argparse
 import scipy.constants
 
-# Definition of braking simulation function
 def braking_sim(m, u, ts, v0):
-    # Define constants and variables
-    # g = 9.81
-    N = m * g
+    """
+    Simulates braking dynamics under different conditions.
+    
+    Parameters:
+    m (float): Mass of the vehicle (kg)
+    u (float): Coefficient of friction
+    ts (float): Time step for simulation (s)
+    v0 (float): Initial velocity (m/s)
+    
+    Returns:
+    tuple: Lists of distance, velocity, and time
+    """
+    g = scipy.constants.G
     a = -g * u
-    time_step = ts
     t = 0.0
     s = 0.0
     v = v0
-    distance = []
-    velocity = []
-    time = []
+    distance, velocity, time = [], [], []
 
-    # Calculation and creation of data arrays
     while v > 0.0:
-        s = s + v * time_step
+        s += max(0, v * ts)
         distance.append(s)
-        v = v + a * time_step
-        velocity.append(v)
-        t = t + time_step
+        v += a * ts
+        velocity.append(max(0, v))
+        t += ts
         time.append(t)
 
     return distance, velocity, time
 
 def main():
     parser = argparse.ArgumentParser(description='Braking Simulation')
-    parser.add_argument('--mass', type=int, help='Vehicle mass', required=True)
-    parser.add_argument('--initial_speed', type=int, help='Initial speed', required=True)
+    parser.add_argument('--mass', type=float, help='Vehicle mass (kg)', required=True)
+    parser.add_argument('--initial_speed', type=float, help='Initial speed (m/s)', required=True)
+    parser.add_argument('--frictions', type=float, nargs='*', default=[0.65, 0.4, 0.2], 
+                        help='List of friction coefficients (default: 0.65, 0.4, 0.2)')
     args = parser.parse_args()
 
     m = args.mass
     v0 = args.initial_speed
-    u_values = [0.65, 0.4, 0.2]
+
+    if m <= 0:
+        raise ValueError("Mass must be a positive value.")
+    if v0 < 0:
+        raise ValueError("Initial speed must be non-negative.")
 
     fig, (graph1, graph2) = plt.subplots(2, 1, figsize=(10, 8))
 
-    for u in u_values:
+    for u in args.frictions:
         distance, velocity, time = braking_sim(m, u, 0.1, v0)
 
         graph1.plot(time, velocity, label=f'u = {u}')
@@ -55,6 +66,7 @@ def main():
     graph2.set_title('Braking distance (dry, wet, icy)')
     graph2.legend()
 
+    plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
