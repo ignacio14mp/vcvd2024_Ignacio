@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 import argparse
-scipy.constants #usar para coger valor de g
+import scipy.constants
 
 # Definition of braking simulation function
 def braking_sim(m, u, ts, v0):
     # Define constants and variables
-    g = 9.81
+    # g = 9.81
     N = m * g
     a = -g * u
     time_step = ts
